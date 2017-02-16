@@ -1,0 +1,503 @@
+/*  This is the last version of the calculator example that   **
+ *  you can use as the starting point for the final exam.     **/
+
+
+#include <stdio.h>
+#include <time.h>
+#include <math.h>
+#include<ctype.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#define KEY "Enter the calculator operation you want to do: "
+#define enter_option() printf("%s", KEY)
+//Timing functions are below**********************************************************************
+#define timing_start() start = clock();	
+#define timing_end(f) msec = (double)(clock()-start) * 1000.0 / CLOCKS_PER_SEC; \
+                      printf("Calling "#f " takes %10.2f microseconds!\n", msec);
+				  
+//Timing functions are above *********************************************************************
+#define SCREEN_HEIGHT 15
+#define clear_screen() \
+   for ( int i = 0; i < SCREEN_HEIGHT; i++ ) printf("\n");
+
+#define clean_input() while ((getchar())!='\n') continue; 
+//Calculator Input function**************************************************************
+#define calculator_operations() printf("\n"); \
+    printf("********    Welcome to C calculator     ***********\n"); \
+    printf("**-----------------------------------------------**\n"); \
+    printf("**   Press 'Q' or 'q' to quit the program        **\n"); \
+    printf("**   Press 'H' or 'h' to display below options   **\n"); \
+    printf("**   Press 'C' or 'c' to clear the screen        **\n"); \
+    printf("**-----------------------------------------------**\n"); \
+    printf("**   Enter 'A' or 'a' for arithmetic mode        **\n"); \
+    printf("**   Enter 'F' or 'f' for function mode          **\n"); \
+    printf("**   Enter 'S' or 's' for sorting mode           **\n"); \
+    printf("***************************************************\n"); \
+    printf("\n");
+//Calculator input is above **************************************************************
+#define DISP(f,x) printf(#f"(%g) = %g\n",x,f(x));
+#define DISP_I(f,x) printf(#f"(%d) = %d\n",(int) x,(int) f((int) x));
+
+// Function prototype declaration
+void arith_mode();
+void func_mode();
+void sort_mode();
+void read_line(char *);
+int factorial(int );
+void quicksort(int [10],int,int);
+void Quick_mode();
+void Bubble_mode();
+void quicksort_time(int x[],int first,int last);
+void Bubble_mode_time();
+void Quick_mode_time();
+void Quick_mode_p();
+void quicksort_p(int *p, int *low, int *high);
+void Bubble_mode_p(int *ptr,int s);
+int*  split(int *p, int *low, int *high);
+// Start of Main Program
+int main()
+{
+    int X=1;
+    char Calc_Mode;
+    
+    do
+    {
+        calculator_operations(); 
+        enter_option();  
+        Calc_Mode=getchar();
+
+        switch(Calc_Mode)
+        {
+            case 'A': case 'a': arith_mode(); break;
+            case 'F': case 'f': func_mode(); break;
+	    case 'S': case 's': sort_mode(); break;
+            // Can you integrate the quick sort program into our calculator?
+			// Maybe? Kinda... Yeah. :)
+            case 'H': case 'h': case '\n': break;
+
+            case 'Q': case 'q': printf("Leaving Calculator!\n");
+                                exit(0); 
+            
+            case 'C': case 'c': clear_screen(); 
+                                clean_input(); break;
+        }
+        
+    } while (X);
+}
+
+//Function Definitions
+
+void arith_mode()
+{
+    double value, operand;
+    char operator;
+    
+    printf("\nPlease enter arithmetic expression "
+           "as in \"x +-*/%%^ y +-*/%%^ z ...\" \n");
+    printf("Your expression is: ");
+    
+    /* Read first operand */
+    scanf("%lf", &value);
+
+    /* Read successive operators and operands */
+    while ((operator = getchar()) != '\n') {
+      if (operator == ' ') continue;
+      
+      scanf("%lf", &operand);
+      switch (operator) {
+        case '+': value += operand; break;
+        case '-': value -= operand; break;
+        case '*': value *= operand; break;
+        case '/': value /= operand; break;
+        case '%': value = ((int) value)%((int) operand); break; 
+        case '^': value = pow(value,operand); break;
+        default:  printf("\n Invalid Operator! \n"); exit(0);
+      }
+    }
+    
+    /* Print result */
+    printf("Value of expression: %g\n\n", value);
+}
+
+void func_mode()
+{
+    char *cp, func_initial, line[40];
+    double variable;
+    
+    printf("\nPlease enter functions as in "
+           "\"name(x)\". \n");
+    printf("Your function is: ");
+    
+    clean_input(); 
+
+    read_line(line);  
+    func_initial = line[0]; 
+
+    for (cp = line; *cp; cp++) {
+        if (*cp == '(') {
+          sscanf(++cp,"%lf", &variable);
+          switch (func_initial) {
+            case 'F': case 'f': DISP_I(factorial,variable); break;
+            case 'E': case 'e': DISP(exp,variable); break;
+            case 'S': case 's': DISP(sqrt,variable); break;
+            default: printf("\n Invalid Function! \n"); exit(0);
+          }
+	  break;
+        }
+    }
+}
+
+void sort_mode()
+{
+	char Sort_Choice;
+    
+	clean_input();
+    printf("Your Choices are: Q for quick,B for bubble, D for Demo, P for Pointer Demo\n");
+    printf("Please choose sorting method:");
+	Sort_Choice=getchar();
+	//I decided to grab either a capital or lowercase letter, keeping it similar to the beginning function
+	switch (Sort_Choice){
+		case 'Q': case 'q': Quick_mode(); break;
+		case 'B': case 'b': Bubble_mode(); break;
+		case 'D': case 'd':Quick_mode_time() ; break;
+		case 'P': case 'p':Quick_mode_p() ; break;
+		default:  printf("\n Invalid Choice! \n"); exit(0);
+	
+	}
+	
+}
+
+void read_line(char *line)
+{
+    int index; char ch;
+    
+    index = 0;
+    while ((ch= getchar()) !='\n') {
+	if (ch == ' ') continue;
+	line[index++] = ch;
+    }
+
+    line[index] = '\0';
+}
+
+int factorial(int n)
+{
+    if(n<=1) return 1;
+    else return n*factorial(n-1);
+}
+/*******************************************************************************************************
+
+From here on are the added functions, i googled another quick sort program to use which i found here:
+http://www.cquestions.com/2008/01/c-program-for-quick-sort.html
+Functionally they are the same as the ones from the slide, 
+the program from the slides was not easy to copy and paste, this one was.
+
+********************************************************************************************************/
+
+
+
+
+void Quick_mode()
+{
+  int x[20],size,i;
+	size=10 ; 
+  
+
+  printf("Enter %d numbers to be sorted:",size);
+  for(i=0;i<size;i++)
+    scanf("%d",&x[i]);
+printf("\n");
+printf("Quick Sorting! \n")	;
+  quicksort(x,0,size-1);
+
+  printf("Sorted numbers: ");
+  for(i=0;i<size;i++)
+    printf(" %d",x[i]);
+clean_input(); // need this or else the menu prints out twice
+printf(" \n \n \n");
+
+}
+
+void quicksort(int x[10],int first,int last){
+    int pivot,j,temp,i;
+// The Quick Sorting algorithim is below! 
+     if(first<last){
+         pivot=first;
+         i=first;
+         j=last;
+		
+         while(i<j){
+             while(x[i]<=x[pivot]&&i<last)
+                 i++;
+             while(x[j]>x[pivot])
+                 j--;
+             if(i<j){
+                 temp=x[i];
+                  x[i]=x[j];
+                  x[j]=temp;
+             }
+         }
+
+         temp=x[pivot];
+         x[pivot]=x[j];
+         x[j]=temp;
+         quicksort(x,first,j-1);
+         quicksort(x,j+1,last);
+
+    }
+}
+
+void Bubble_mode()
+{
+
+  int s,temp,i,j,a[20];
+
+  s=10;
+
+  printf("Enter %d numbers to be sorted: ",s);
+  for(i=0;i<s;i++)
+      scanf("%d",&a[i]);
+printf("\n");
+printf("Bubble Sorting! \n");
+  //Bubble sorting algorithm
+  for(i=s-2;i>=0;i--){
+      for(j=0;j<=i;j++){
+           if(a[j]>a[j+1]){
+               temp=a[j];
+              a[j]=a[j+1];
+              a[j+1]=temp;
+           }
+      }
+  }
+
+  printf("Sorted numbers: ");
+  for(i=0;i<s;i++)
+      printf(" %d",a[i]);
+clean_input();
+  printf("\n \n \n");
+
+}
+
+/**********************************************************************************************
+***********************************************************************************************
+Below here are the functions used for timing
+I've thought about using if conditionals for the timing checking to see the input of the user and
+then executing the clock if they entered a "demo letter" like d or p. but i think making new functions will be easier
+The other way would probably be more effiecent because of less programs/lines of code.
+
+***********************************************************************************************
+***********************************************************************************************/
+
+
+
+
+// the quick mode time function is the main demo function and actually incorporates the bubble function too
+void Quick_mode_time()
+{srand(time(NULL));
+	int t1,t2,t_tot;
+	
+printf("\n");
+printf("***************    Report of performance comparision    ***************\n"); 
+printf("\n");	
+printf("             quicksort       bubblesort      (in microseconds)\n");	
+int end=0;
+do{
+	int start=0,top=0;
+	end+=500;
+	int a[end],b[end];
+printf("N=%d:   ",end);
+for (int j=0;j<end;j++){
+	a[j]=rand()%((2*end)+1)-end;
+	if(a[j]<start)
+		start=a[j];
+	else if (a[j]>top)
+		top=a[j];
+}
+for(int i=0;i<end;i++)
+	b[i]=a[i];
+
+t1=clock();
+quicksort_time(a,0,end);   
+t2=clock();
+t_tot= (double)(t2-t1)*1000000/CLOCKS_PER_SEC;
+printf("\t%7.1d\t", t_tot);
+t1=clock();
+Bubble_mode_time( b, end, 0);
+t2=clock();
+t_tot= (double)(t2-t1)*1000000/CLOCKS_PER_SEC;
+printf("\t%7.1d\t", t_tot);
+
+printf("      array in range: [%d,%d]\n",start ,top ); 
+printf("\n");	
+
+
+
+} while(end!=5000);	
+clean_input();	
+}
+
+void quicksort_time(int x[],int first,int last){
+    int pivot,j,temp,i;
+// The Quick Sorting algorithim is below! 
+     if(first<last){
+         pivot=first;
+         i=first;
+         j=last;
+		
+         while(i<j){
+             while(x[i]<=x[pivot]&&i<last)
+                 i++;
+             while(x[j]>x[pivot])
+                 j--;
+             if(i<j){
+                 temp=x[i];
+                  x[i]=x[j];
+                  x[j]=temp;
+             }
+         }
+
+         temp=x[pivot];
+         x[pivot]=x[j];
+         x[j]=temp;
+         quicksort(x,first,j-1);
+         quicksort(x,j+1,last);
+
+    }
+}
+void Bubble_mode_time(int a[],int s,int i)
+{
+  int j,temp;
+
+ 
+
+ 
+  
+  for(i=s-2;i>=0;i--){
+      for(j=0;j<=i;j++){
+           if(a[j]>a[j+1]){
+               temp=a[j];
+              a[j]=a[j+1];
+              a[j+1]=temp;
+           }
+      }
+  }
+
+  
+
+
+           
+  }
+
+ 
+/**********************************************************************************************
+***********************************************************************************************
+***********************************************************************************************
+Below here is the pointer demo
+I had a lot of trouble changing my orginal quicksort program into pointers so i used a slightly 
+different one, again the functionality is the same it splits the code into partitions and uses 
+a pivot column to sort the numbers.
+***********************************************************************************************
+***********************************************************************************************
+***********************************************************************************************/
+
+void Quick_mode_p()
+{srand(time(NULL));
+	int t1,t2,t_tot;
+	
+printf("\n");
+printf("***************    Report of performance comparision    ***************\n"); 
+printf("\n");	
+printf("             quicksort       bubblesort      (in microseconds)\n");	
+int end=0;
+do{
+	int start=0,top=0;
+	end+=500;
+	int a[end],b[end];
+
+printf("N=%d:   ",end);
+for (int j=0;j<end;j++){
+	a[j]=rand()%((2*end)+1)-end;
+	if(a[j]<start)
+		start=a[j];
+	else if (a[j]>top)
+		top=a[j];
+}
+for(int i=0;i<end;i++){
+	b[i]=a[i];
+}
+int *p=a,*q=&a[0],*k=&a[end-1],*f=b;
+t1=clock();
+quicksort_p(p, q, k);
+t2=clock();
+t_tot= (double)(t2-t1)*1000000/CLOCKS_PER_SEC;
+printf("\t%7.1d\t", t_tot);
+t1=clock();
+Bubble_mode_p( f,end);
+t2=clock();
+t_tot= (double)(t2-t1)*1000000/CLOCKS_PER_SEC;
+printf("\t%7.1d\t", t_tot);
+
+printf("      array in range: [%4d , %4d]\n",start ,top ); 
+printf("\n");	
+
+
+
+} while(end!=5000);	
+clean_input();
+	
+}
+
+void quicksort_p(int *p, int *low, int *high)
+{
+    int *middle;
+    if (low >= high) return;
+    middle = split(p, low, high);
+
+    quicksort_p(p, low, middle - 1);
+    quicksort_p(p, middle + 1, high);
+}
+
+int*  split(int *p, int *low, int *high)
+{
+    int part_element = *low;
+
+    for (;;) {
+        while (low < high && part_element <= *high)
+            high--;
+        if (low >= high) break;
+        *low++ = *high;
+
+        while (low < high && *low <= part_element)
+            low++;
+        if (low >= high) break;
+        *high-- = *low;
+
+    }
+
+    *high = part_element;
+    return high;
+}
+ 
+void Bubble_mode_p(int *ptr,int s)
+{
+int i,j;
+int temp;
+for(i=1;i<s;i++)
+ {
+  for(j=0;j<s-i;j++)
+   {
+    if(*(ptr+j)>*(ptr+j+1))
+     {
+      temp=*(ptr+j);
+      *(ptr+j)=*(ptr+j+1);
+      *(ptr+j+1)=temp;
+     }
+   }
+}
+}
+//This is the 500th line of code, this is the single longest program i have written, If you made it this far thanks for the class I've learned a lot! Have a good summer!
+
+
+
+
+
